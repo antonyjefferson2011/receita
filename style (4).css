@@ -1,0 +1,544 @@
+/* =============================================================
+   PROJETO: Minhas Receitas — App de receitas com login (Firebase)
+   DATA DE CRIAÇÃO: 01/08/2026
+   ARQUIVO: style.css
+   DESCRIÇÃO: Estilos do app, mobile-first, com variáveis CSS,
+   gradientes suaves em tons de laranja/terrosos e animações.
+   ============================================================= */
+
+/* -------------------------------------------------------------
+   1. VARIÁVEIS GLOBAIS (design tokens)
+   Centralizamos cores, fontes e espaçamentos aqui para manter
+   consistência e facilitar futuras alterações de tema.
+   ------------------------------------------------------------- */
+:root {
+  /* Paleta principal — terracota / laranja queimado / creme */
+  --cor-terracota: #C4622D;
+  --cor-terracota-escura: #9B4A20;
+  --cor-argila: #E8B27D;
+  --cor-creme: #FBF3E9;
+  --cor-creme-card: #FFFDFA;
+  --cor-marrom-texto: #4A342A;
+  --cor-marrom-suave: #8A7263;
+
+  /* Cores de feedback */
+  --cor-sucesso: #4C7A4C;
+  --cor-sucesso-bg: #EAF3EA;
+  --cor-erro: #B4432E;
+  --cor-erro-bg: #FBEAE6;
+
+  /* Gradientes */
+  --gradiente-fundo: linear-gradient(160deg, #FBF3E9 0%, #F5E2CE 45%, #EBC79E 100%);
+  --gradiente-botao: linear-gradient(135deg, #D9773C 0%, #B24E24 100%);
+  --gradiente-header: linear-gradient(120deg, #C4622D 0%, #9B4A20 100%);
+
+  /* Tipografia */
+  --fonte-titulo: 'Fraunces', Georgia, serif;
+  --fonte-corpo: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Espaçamentos e formas */
+  --raio-sm: 10px;
+  --raio-md: 16px;
+  --raio-lg: 24px;
+  --sombra-card: 0 8px 24px rgba(155, 74, 32, 0.12);
+  --sombra-card-hover: 0 14px 32px rgba(155, 74, 32, 0.18);
+  --transicao: 0.25s ease;
+}
+
+/* -------------------------------------------------------------
+   2. RESET BÁSICO
+   ------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--fonte-corpo);
+  color: var(--cor-marrom-texto);
+  background: var(--gradiente-fundo);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Respeita usuários que preferem menos animação */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* -------------------------------------------------------------
+   3. ANIMAÇÕES
+   ------------------------------------------------------------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease both;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* -------------------------------------------------------------
+   4. TELA DE AUTENTICAÇÃO (login / cadastro)
+   ------------------------------------------------------------- */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--cor-creme-card);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-card);
+  padding: 36px 28px;
+  border: 1px solid rgba(196, 98, 45, 0.1);
+}
+
+.auth-brand {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-brand-icon {
+  font-size: 2.2rem;
+  display: inline-block;
+}
+
+.auth-brand-title {
+  font-family: var(--fonte-titulo);
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--cor-terracota-escura);
+  margin-top: 6px;
+}
+
+.auth-brand-subtitle {
+  color: var(--cor-marrom-suave);
+  font-size: 0.92rem;
+  margin-top: 6px;
+}
+
+/* Abas Entrar / Criar conta */
+.auth-tabs {
+  display: flex;
+  background: var(--cor-creme);
+  border-radius: var(--raio-sm);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.auth-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 0;
+  border-radius: 8px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--cor-marrom-suave);
+  cursor: pointer;
+  transition: background var(--transicao), color var(--transicao), box-shadow var(--transicao);
+}
+
+.auth-tab.active {
+  background: var(--cor-creme-card);
+  color: var(--cor-terracota-escura);
+  box-shadow: 0 2px 6px rgba(155, 74, 32, 0.15);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* -------------------------------------------------------------
+   5. CAMPOS DE FORMULÁRIO (compartilhados por toda a aplicação)
+   ------------------------------------------------------------- */
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cor-marrom-texto);
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+
+.field-hint {
+  font-weight: 400;
+  color: var(--cor-marrom-suave);
+  font-size: 0.78rem;
+}
+
+.field-input {
+  width: 100%;
+  font-family: var(--fonte-corpo);
+  font-size: 0.95rem;
+  padding: 12px 14px;
+  border-radius: var(--raio-sm);
+  border: 1.5px solid #E9D9C6;
+  background: #FFFDFB;
+  color: var(--cor-marrom-texto);
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+
+.field-input::placeholder {
+  color: #BFA98F;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--cor-terracota);
+  box-shadow: 0 0 0 3px rgba(196, 98, 45, 0.15);
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.5;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+
+@media (min-width: 700px) {
+  .field-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+}
+
+/* -------------------------------------------------------------
+   6. BOTÕES
+   ------------------------------------------------------------- */
+.btn {
+  cursor: pointer;
+  font-family: var(--fonte-corpo);
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: var(--raio-sm);
+  padding: 12px 20px;
+  transition: transform var(--transicao), box-shadow var(--transicao), opacity var(--transicao), background var(--transicao);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  width: 100%;
+  margin-top: 20px;
+  background: var(--gradiente-botao);
+  color: #FFF7F0;
+  box-shadow: 0 6px 16px rgba(178, 78, 36, 0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 8px 22px rgba(178, 78, 36, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFF7F0;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.btn-excluir {
+  background: transparent;
+  color: var(--cor-erro);
+  border: 1.5px solid rgba(180, 67, 46, 0.35);
+  font-size: 0.82rem;
+  padding: 8px 14px;
+}
+
+.btn-excluir:hover {
+  background: var(--cor-erro-bg);
+  border-color: var(--cor-erro);
+}
+
+/* -------------------------------------------------------------
+   7. MENSAGENS DE FEEDBACK (erro / sucesso)
+   ------------------------------------------------------------- */
+.auth-mensagem,
+.receita-mensagem {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  padding: 0;
+  min-height: 0;
+  border-radius: var(--raio-sm);
+  text-align: center;
+  transition: all var(--transicao);
+}
+
+.auth-mensagem:empty,
+.receita-mensagem:empty {
+  display: none;
+}
+
+.auth-mensagem.erro,
+.receita-mensagem.erro {
+  color: var(--cor-erro);
+  background: var(--cor-erro-bg);
+  padding: 10px 12px;
+}
+
+.auth-mensagem.sucesso,
+.receita-mensagem.sucesso {
+  color: var(--cor-sucesso);
+  background: var(--cor-sucesso-bg);
+  padding: 10px 12px;
+}
+
+/* -------------------------------------------------------------
+   8. CABEÇALHO DO APP (usuário logado)
+   ------------------------------------------------------------- */
+.app-header {
+  background: var(--gradiente-header);
+  padding: 16px 20px;
+  box-shadow: 0 4px 14px rgba(155, 74, 32, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #FFF7F0;
+}
+
+.app-brand-icon {
+  font-size: 1.4rem;
+}
+
+.app-brand-title {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+
+.app-header-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-user-email {
+  color: rgba(255, 247, 240, 0.85);
+  font-size: 0.82rem;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------
+   9. CONTEÚDO PRINCIPAL DO APP
+   ------------------------------------------------------------- */
+.app-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 18px 60px;
+}
+
+.dashboard-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.dashboard-title {
+  font-family: var(--fonte-titulo);
+  font-size: 1.5rem;
+  color: var(--cor-terracota-escura);
+}
+
+.dashboard-subtitle {
+  color: var(--cor-marrom-suave);
+  font-size: 0.88rem;
+  margin-top: 4px;
+}
+
+.contador-card {
+  background: var(--cor-creme-card);
+  border-radius: var(--raio-md);
+  padding: 12px 22px;
+  text-align: center;
+  box-shadow: var(--sombra-card);
+  min-width: 96px;
+}
+
+.contador-numero {
+  display: block;
+  font-family: var(--fonte-titulo);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cor-terracota);
+}
+
+.contador-label {
+  font-size: 0.72rem;
+  color: var(--cor-marrom-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Cartão de "Nova receita" */
+.nova-receita-card {
+  background: var(--cor-creme-card);
+  border-radius: var(--raio-lg);
+  padding: 24px;
+  box-shadow: var(--sombra-card);
+  margin-bottom: 32px;
+}
+
+.card-heading {
+  font-family: var(--fonte-titulo);
+  font-size: 1.15rem;
+  color: var(--cor-terracota-escura);
+  margin-bottom: 4px;
+}
+
+/* -------------------------------------------------------------
+   10. LISTA DE RECEITAS
+   ------------------------------------------------------------- */
+.lista-receitas-section {
+  margin-top: 8px;
+}
+
+.lista-vazia {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--cor-marrom-suave);
+}
+
+.lista-vazia-icon {
+  font-size: 2.4rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.lista-receitas {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 700px) {
+  .lista-receitas {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.receita-card {
+  background: var(--cor-creme-card);
+  border-radius: var(--raio-md);
+  padding: 20px;
+  box-shadow: var(--sombra-card);
+  border-left: 4px solid var(--cor-terracota);
+  transition: box-shadow var(--transicao), transform var(--transicao);
+  animation: popIn 0.35s ease both;
+}
+
+.receita-card:hover {
+  box-shadow: var(--sombra-card-hover);
+  transform: translateY(-3px);
+}
+
+.receita-card-titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 1.15rem;
+  color: var(--cor-marrom-texto);
+  margin-bottom: 10px;
+}
+
+.receita-card-secao {
+  margin-top: 10px;
+}
+
+.receita-card-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cor-terracota);
+  margin-bottom: 4px;
+}
+
+.receita-card-texto {
+  font-size: 0.88rem;
+  color: var(--cor-marrom-texto);
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+.receita-card-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* -------------------------------------------------------------
+   11. RESPONSIVIDADE ADICIONAL (telas pequenas)
+   ------------------------------------------------------------- */
+@media (max-width: 420px) {
+  .auth-card {
+    padding: 28px 20px;
+  }
+
+  .app-user-email {
+    display: none; /* economiza espaço em telas muito pequenas */
+  }
+}

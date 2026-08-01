@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<!--
+  =============================================================
+  PROJETO: Minhas Receitas — App de receitas com login (Firebase)
+  DATA DE CRIAÇÃO: 01/08/2026
+  DESCRIÇÃO: Site completo de receitas com cadastro/login de
+  usuários e CRUD de receitas usando Firebase Authentication
+  e Firebase Realtime Database.
+  =============================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minhas Receitas · Guarde suas receitas favoritas</title>
+
+  <!-- Fontes do Google Fonts: uma serifada para títulos e uma sóbria para o corpo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Nosso CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===================== TELA DE LOGIN / CADASTRO ===================== -->
+  <!-- Este container fica visível enquanto ninguém está autenticado -->
+  <section id="auth-container" class="auth-container">
+    <div class="auth-card fade-in">
+
+      <div class="auth-brand">
+        <span class="auth-brand-icon" aria-hidden="true">🍲</span>
+        <h1 class="auth-brand-title">Minhas Receitas</h1>
+        <p class="auth-brand-subtitle">Suas receitas, guardadas com carinho.</p>
+      </div>
+
+      <!-- Abas para alternar entre Entrar e Criar conta -->
+      <div class="auth-tabs" role="tablist">
+        <button type="button" class="auth-tab active" data-tab="login" role="tab" aria-selected="true">
+          Entrar
+        </button>
+        <button type="button" class="auth-tab" data-tab="cadastro" role="tab" aria-selected="false">
+          Criar conta
+        </button>
+      </div>
+
+      <!-- Formulário de LOGIN -->
+      <form id="login-form" class="auth-form" novalidate>
+        <label class="field-label" for="login-email">E-mail</label>
+        <input class="field-input" type="email" id="login-email" placeholder="voce@email.com" required autocomplete="email" />
+
+        <label class="field-label" for="login-senha">Senha</label>
+        <input class="field-input" type="password" id="login-senha" placeholder="Sua senha" required autocomplete="current-password" minlength="6" />
+
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </form>
+
+      <!-- Formulário de CADASTRO (começa escondido) -->
+      <form id="cadastro-form" class="auth-form hidden" novalidate>
+        <label class="field-label" for="cadastro-nome">Nome</label>
+        <input class="field-input" type="text" id="cadastro-nome" placeholder="Como podemos te chamar?" required autocomplete="name" />
+
+        <label class="field-label" for="cadastro-email">E-mail</label>
+        <input class="field-input" type="email" id="cadastro-email" placeholder="voce@email.com" required autocomplete="email" />
+
+        <label class="field-label" for="cadastro-senha">Senha</label>
+        <input class="field-input" type="password" id="cadastro-senha" placeholder="Crie uma senha (mín. 6 caracteres)" required autocomplete="new-password" minlength="6" />
+
+        <button type="submit" class="btn btn-primary">Criar conta</button>
+      </form>
+
+      <!-- Área de mensagens de erro/sucesso da autenticação -->
+      <p id="auth-mensagem" class="auth-mensagem" role="alert" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- ===================== APP PRINCIPAL (usuário logado) ===================== -->
+  <!-- Este container só aparece depois que o Firebase confirma o login -->
+  <div id="app-container" class="app-container hidden">
+
+    <header class="app-header">
+      <div class="app-header-inner">
+        <div class="app-brand">
+          <span class="app-brand-icon" aria-hidden="true">🍲</span>
+          <span class="app-brand-title">Minhas Receitas</span>
+        </div>
+
+        <div class="app-header-user">
+          <span id="usuario-email" class="app-user-email"></span>
+          <button id="btn-logout" class="btn btn-ghost" type="button">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+
+      <!-- Bloco de boas-vindas + contador de receitas -->
+      <section class="dashboard-intro fade-in">
+        <div>
+          <h2 class="dashboard-title">Suas receitas</h2>
+          <p class="dashboard-subtitle">Tudo o que você cozinha de melhor, num só lugar.</p>
+        </div>
+        <div class="contador-card">
+          <span id="contador-receitas" class="contador-numero">0</span>
+          <span class="contador-label">receitas</span>
+        </div>
+      </section>
+
+      <!-- Formulário para adicionar nova receita -->
+      <section class="nova-receita-card fade-in">
+        <h3 class="card-heading">Nova receita</h3>
+        <form id="receita-form" class="receita-form" novalidate>
+          <label class="field-label" for="receita-titulo">Título</label>
+          <input class="field-input" type="text" id="receita-titulo" placeholder="Ex: Bolo de fubá cremoso" required />
+
+          <div class="field-grid">
+            <div class="field-col">
+              <label class="field-label" for="receita-ingredientes">Ingredientes <span class="field-hint">(um por linha)</span></label>
+              <textarea class="field-input field-textarea" id="receita-ingredientes" rows="5" placeholder="2 xícaras de farinha&#10;3 ovos&#10;1 xícara de leite" required></textarea>
+            </div>
+            <div class="field-col">
+              <label class="field-label" for="receita-preparo">Modo de preparo <span class="field-hint">(passo a passo)</span></label>
+              <textarea class="field-input field-textarea" id="receita-preparo" rows="5" placeholder="1. Misture os secos&#10;2. Adicione os líquidos&#10;3. Asse por 40 min" required></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <span id="salvar-texto">Salvar receita</span>
+          </button>
+        </form>
+        <p id="receita-mensagem" class="receita-mensagem" role="alert" aria-live="polite"></p>
+      </section>
+
+      <!-- Lista de receitas do usuário logado -->
+      <section class="lista-receitas-section">
+        <div id="lista-vazia" class="lista-vazia hidden">
+          <span class="lista-vazia-icon" aria-hidden="true">🍽️</span>
+          <p>Você ainda não tem receitas. Que tal adicionar a primeira?</p>
+        </div>
+        <div id="lista-receitas" class="lista-receitas" aria-live="polite">
+          <!-- Os cards de receita são inseridos aqui via JavaScript -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================== Firebase SDK (versão compatível, via CDN) ===================== -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <!-- Nossa lógica -->
+  <script src="app.js"></script>
+</body>
+</html>
