@@ -22,13 +22,13 @@
       projeto (bloco separado "Regras de segurança").
    ------------------------------------------------------------- */
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY_AQUI",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
-  projectId: "SEU_PROJETO",
-  storageBucket: "SEU_PROJETO.appspot.com",
-  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyCVXtFvIc9NLST5pMi4yGKpwfq2NL_U2Rs",
+  authDomain: "teste-top-5e71d.firebaseapp.com",
+  databaseURL: "https://teste-top-5e71d-default-rtdb.firebaseio.com",
+  projectId: "teste-top-5e71d",
+  storageBucket: "teste-top-5e71d.firebasestorage.app",
+  messagingSenderId: "508513466627",
+  appId: "1:508513466627:web:47118b2fd5dd05508cd136"
 };
 
 // Inicializa o Firebase com a configuração acima
