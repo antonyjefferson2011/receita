@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <!--
   =============================================================
-  PROJETO: Minhas Receitas — App de receitas com login (Firebase)
-  DATA DE CRIAÇÃO: 01/08/2026
-  DESCRIÇÃO: Site completo de receitas com cadastro/login de
-  usuários e CRUD de receitas usando Firebase Authentication
-  e Firebase Realtime Database.
+  PROJETO: Rede Social de Receitas (com Firebase)
+  DATA DE ATUALIZAÇÃO: 01/08/2026
+  DESCRIÇÃO: Feed público de receitas — todo usuário autenticado
+  vê as receitas de todo mundo, pode postar as suas (com imagem
+  via ImgBB) e excluir apenas as que ele mesmo criou.
   =============================================================
 -->
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Minhas Receitas · Guarde suas receitas favoritas</title>
+  <title>Rede Social de Receitas · Compartilhe suas receitas</title>
 
   <!-- Fontes do Google Fonts: uma serifada para títulos e uma sóbria para o corpo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,8 +31,8 @@
 
       <div class="auth-brand">
         <span class="auth-brand-icon" aria-hidden="true">🍲</span>
-        <h1 class="auth-brand-title">Minhas Receitas</h1>
-        <p class="auth-brand-subtitle">Suas receitas, guardadas com carinho.</p>
+        <h1 class="auth-brand-title">Rede Social de Receitas</h1>
+        <p class="auth-brand-subtitle">Cozinhe, compartilhe e descubra receitas.</p>
       </div>
 
       <!-- Abas para alternar entre Entrar e Criar conta -->
@@ -76,14 +76,13 @@
   </section>
 
   <!-- ===================== APP PRINCIPAL (usuário logado) ===================== -->
-  <!-- Este container só aparece depois que o Firebase confirma o login -->
   <div id="app-container" class="app-container hidden">
 
     <header class="app-header">
       <div class="app-header-inner">
         <div class="app-brand">
           <span class="app-brand-icon" aria-hidden="true">🍲</span>
-          <span class="app-brand-title">Minhas Receitas</span>
+          <span class="app-brand-title">Rede Social de Receitas</span>
         </div>
 
         <div class="app-header-user">
@@ -95,11 +94,11 @@
 
     <main class="app-main">
 
-      <!-- Bloco de boas-vindas + contador de receitas -->
+      <!-- Bloco de boas-vindas + contador de receitas do feed -->
       <section class="dashboard-intro fade-in">
         <div>
-          <h2 class="dashboard-title">Suas receitas</h2>
-          <p class="dashboard-subtitle">Tudo o que você cozinha de melhor, num só lugar.</p>
+          <h2 class="dashboard-title">Feed de receitas</h2>
+          <p class="dashboard-subtitle">Tudo que a comunidade está cozinhando agora.</p>
         </div>
         <div class="contador-card">
           <span id="contador-receitas" class="contador-numero">0</span>
@@ -107,12 +106,34 @@
         </div>
       </section>
 
-      <!-- Formulário para adicionar nova receita -->
+      <!-- Formulário para publicar nova receita (fica acima do feed) -->
       <section class="nova-receita-card fade-in">
-        <h3 class="card-heading">Nova receita</h3>
+        <h3 class="card-heading">Publicar nova receita</h3>
         <form id="receita-form" class="receita-form" novalidate>
+
           <label class="field-label" for="receita-titulo">Título</label>
           <input class="field-input" type="text" id="receita-titulo" placeholder="Ex: Bolo de fubá cremoso" required />
+
+          <div class="field-grid field-grid-3">
+            <div class="field-col">
+              <label class="field-label" for="receita-tempo">⏱️ Tempo de preparo <span class="field-hint">(opcional)</span></label>
+              <input class="field-input" type="text" id="receita-tempo" placeholder="Ex: 30 min" />
+            </div>
+            <div class="field-col">
+              <label class="field-label" for="receita-acessorios">🥄 Acessórios/Utensílios <span class="field-hint">(opcional)</span></label>
+              <input class="field-input" type="text" id="receita-acessorios" placeholder="Ex: Forno, Liquidificador" />
+            </div>
+            <div class="field-col">
+              <label class="field-label" for="receita-imagem">🖼️ Foto da receita <span class="field-hint">(opcional)</span></label>
+              <input class="field-input field-file" type="file" id="receita-imagem" accept="image/*" />
+            </div>
+          </div>
+
+          <!-- Pré-visualização da imagem escolhida -->
+          <div id="preview-imagem-wrapper" class="preview-imagem-wrapper hidden">
+            <img id="preview-imagem" class="preview-imagem" alt="Pré-visualização da imagem escolhida" />
+            <button type="button" id="btn-remover-imagem" class="btn-remover-imagem" aria-label="Remover imagem selecionada">✕</button>
+          </div>
 
           <div class="field-grid">
             <div class="field-col">
@@ -120,23 +141,35 @@
               <textarea class="field-input field-textarea" id="receita-ingredientes" rows="5" placeholder="2 xícaras de farinha&#10;3 ovos&#10;1 xícara de leite" required></textarea>
             </div>
             <div class="field-col">
-              <label class="field-label" for="receita-preparo">Modo de preparo <span class="field-hint">(passo a passo)</span></label>
-              <textarea class="field-input field-textarea" id="receita-preparo" rows="5" placeholder="1. Misture os secos&#10;2. Adicione os líquidos&#10;3. Asse por 40 min" required></textarea>
+              <label class="field-label" for="receita-passos">📝 Passo a passo <span class="field-hint">(um passo por linha)</span></label>
+              <textarea class="field-input field-textarea" id="receita-passos" rows="5" placeholder="1. Misture os secos&#10;2. Adicione os líquidos&#10;3. Asse por 40 min" required></textarea>
             </div>
           </div>
 
           <button type="submit" class="btn btn-primary">
-            <span id="salvar-texto">Salvar receita</span>
+            <span id="salvar-texto">Publicar receita</span>
           </button>
         </form>
         <p id="receita-mensagem" class="receita-mensagem" role="alert" aria-live="polite"></p>
       </section>
 
-      <!-- Lista de receitas do usuário logado -->
+      <!-- Botão de demonstração: gera 1000 receitas de teste -->
+      <section class="seed-card fade-in">
+        <div class="seed-card-texto">
+          <h3 class="card-heading">Popular o feed (demo)</h3>
+          <p class="dashboard-subtitle">Gera 1000 receitas de exemplo, publicadas com a sua conta, para testar o feed com volume real de dados.</p>
+        </div>
+        <div class="seed-card-acao">
+          <button id="btn-seed" type="button" class="btn btn-seed">Gerar 1000 receitas (demo)</button>
+          <p id="seed-progresso" class="seed-progresso" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <!-- Feed com as receitas de todos os usuários -->
       <section class="lista-receitas-section">
         <div id="lista-vazia" class="lista-vazia hidden">
           <span class="lista-vazia-icon" aria-hidden="true">🍽️</span>
-          <p>Você ainda não tem receitas. Que tal adicionar a primeira?</p>
+          <p>Ainda não há receitas no feed. Que tal publicar a primeira?</p>
         </div>
         <div id="lista-receitas" class="lista-receitas" aria-live="polite">
           <!-- Os cards de receita são inseridos aqui via JavaScript -->
