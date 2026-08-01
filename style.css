@@ -1,15 +1,15 @@
 /* =============================================================
-   PROJETO: Minhas Receitas — App de receitas com login (Firebase)
-   DATA DE CRIAÇÃO: 01/08/2026
+   PROJETO: Rede Social de Receitas (com Firebase)
+   DATA DE ATUALIZAÇÃO: 01/08/2026
    ARQUIVO: style.css
    DESCRIÇÃO: Estilos do app, mobile-first, com variáveis CSS,
    gradientes suaves em tons de laranja/terrosos e animações.
+   Inclui estilos do feed social, upload de imagem e botão
+   de geração de receitas de demonstração.
    ============================================================= */
 
 /* -------------------------------------------------------------
    1. VARIÁVEIS GLOBAIS (design tokens)
-   Centralizamos cores, fontes e espaçamentos aqui para manter
-   consistência e facilitar futuras alterações de tema.
    ------------------------------------------------------------- */
 :root {
   /* Paleta principal — terracota / laranja queimado / creme */
@@ -26,6 +26,9 @@
   --cor-sucesso-bg: #EAF3EA;
   --cor-erro: #B4432E;
   --cor-erro-bg: #FBEAE6;
+
+  /* Cor de destaque para a função "demo" (roxo terroso, discreto) */
+  --cor-demo: #7A5A46;
 
   /* Gradientes */
   --gradiente-fundo: linear-gradient(160deg, #FBF3E9 0%, #F5E2CE 45%, #EBC79E 100%);
@@ -71,7 +74,6 @@ body {
   display: none !important;
 }
 
-/* Respeita usuários que preferem menos animação */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -129,10 +131,11 @@ body {
 
 .auth-brand-title {
   font-family: var(--fonte-titulo);
-  font-size: 1.7rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--cor-terracota-escura);
   margin-top: 6px;
+  line-height: 1.2;
 }
 
 .auth-brand-subtitle {
@@ -141,7 +144,6 @@ body {
   margin-top: 6px;
 }
 
-/* Abas Entrar / Criar conta */
 .auth-tabs {
   display: flex;
   background: var(--cor-creme);
@@ -180,6 +182,7 @@ body {
    5. CAMPOS DE FORMULÁRIO (compartilhados por toda a aplicação)
    ------------------------------------------------------------- */
 .field-label {
+  display: block;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--cor-marrom-texto);
@@ -232,6 +235,70 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
+  .field-grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* Campo de upload de arquivo (imagem) */
+.field-file {
+  padding: 9px 10px;
+  cursor: pointer;
+}
+
+.field-file::file-selector-button {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #FFF7F0;
+  background: var(--gradiente-botao);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: opacity var(--transicao);
+}
+
+.field-file::file-selector-button:hover {
+  opacity: 0.9;
+}
+
+/* Pré-visualização da imagem escolhida no formulário */
+.preview-imagem-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-top: 14px;
+}
+
+.preview-imagem {
+  display: block;
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--raio-md);
+  border: 2px solid var(--cor-argila);
+  box-shadow: var(--sombra-card);
+}
+
+.btn-remover-imagem {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: var(--cor-erro);
+  color: #FFF7F0;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transicao);
+}
+
+.btn-remover-imagem:hover {
+  transform: scale(1.08);
 }
 
 /* -------------------------------------------------------------
@@ -294,6 +361,23 @@ body {
   border-color: var(--cor-erro);
 }
 
+/* Botão de gerar receitas de demonstração */
+.btn-seed {
+  background: var(--cor-creme-card);
+  color: var(--cor-demo);
+  border: 1.5px solid rgba(122, 90, 70, 0.35);
+  white-space: nowrap;
+}
+
+.btn-seed:hover {
+  background: #F3E9DE;
+}
+
+.btn-seed:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* -------------------------------------------------------------
    7. MENSAGENS DE FEEDBACK (erro / sucesso)
    ------------------------------------------------------------- */
@@ -325,6 +409,14 @@ body {
   color: var(--cor-sucesso);
   background: var(--cor-sucesso-bg);
   padding: 10px 12px;
+}
+
+.seed-progresso {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--cor-demo);
+  text-align: center;
+  min-height: 1em;
 }
 
 /* -------------------------------------------------------------
@@ -363,7 +455,7 @@ body {
 .app-brand-title {
   font-family: var(--fonte-titulo);
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
 }
 
 .app-header-user {
@@ -441,7 +533,7 @@ body {
   border-radius: var(--raio-lg);
   padding: 24px;
   box-shadow: var(--sombra-card);
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .card-heading {
@@ -451,8 +543,31 @@ body {
   margin-bottom: 4px;
 }
 
+/* Cartão do botão de geração de receitas demo */
+.seed-card {
+  background: linear-gradient(135deg, #F3E9DE 0%, #EBDCC8 100%);
+  border: 1.5px dashed rgba(122, 90, 70, 0.35);
+  border-radius: var(--raio-lg);
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.seed-card-texto {
+  flex: 1;
+  min-width: 220px;
+}
+
+.seed-card-acao {
+  text-align: center;
+}
+
 /* -------------------------------------------------------------
-   10. LISTA DE RECEITAS
+   10. FEED DE RECEITAS
    ------------------------------------------------------------- */
 .lista-receitas-section {
   margin-top: 8px;
@@ -485,11 +600,13 @@ body {
 .receita-card {
   background: var(--cor-creme-card);
   border-radius: var(--raio-md);
-  padding: 20px;
+  overflow: hidden;
   box-shadow: var(--sombra-card);
   border-left: 4px solid var(--cor-terracota);
   transition: box-shadow var(--transicao), transform var(--transicao);
   animation: popIn 0.35s ease both;
+  display: flex;
+  flex-direction: column;
 }
 
 .receita-card:hover {
@@ -497,11 +614,63 @@ body {
   transform: translateY(-3px);
 }
 
+.receita-card-imagem-wrapper {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, var(--cor-argila), var(--cor-creme));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.receita-card-imagem {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.receita-card-imagem-fallback {
+  font-size: 3rem;
+}
+
+.receita-card-corpo {
+  padding: 18px 20px 20px;
+}
+
 .receita-card-titulo {
   font-family: var(--fonte-titulo);
   font-size: 1.15rem;
   color: var(--cor-marrom-texto);
+  margin-bottom: 6px;
+}
+
+.receita-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--cor-marrom-suave);
   margin-bottom: 10px;
+}
+
+.receita-card-meta-item {
+  background: var(--cor-creme);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.receita-card-autor {
+  font-size: 0.78rem;
+  color: var(--cor-terracota-escura);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.receita-card-data {
+  font-size: 0.72rem;
+  color: var(--cor-marrom-suave);
+  margin-bottom: 8px;
 }
 
 .receita-card-secao {
@@ -539,6 +708,12 @@ body {
   }
 
   .app-user-email {
-    display: none; /* economiza espaço em telas muito pequenas */
+    display: none;
+  }
+
+  .seed-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
   }
 }
