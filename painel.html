@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — acesso restrito</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#14171c; --panel-2:#191d24; --panel-3:#1e232b;
+    --line:#262b33; --text:#e8e7e2; --muted:#8c92a0;
+    --accent:#baff39; --accent-dim:#8fce23; --accent-2:#39d2ff; --danger:#ff6b6b;
+    --mono:'JetBrains Mono', monospace; --sans:'Manrope', sans-serif;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh;}
+  input,textarea,button{font-family:inherit;}
+
+  /* ---- tela de login ---- */
+  #lockscreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .lock-box{
+    width:100%; max-width:380px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius);
+    padding:34px;
+  }
+  .lock-box .tag{
+    font-family:var(--mono); font-size:12px; color:var(--accent); margin-bottom:16px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .lock-box h1{font-size:20px; margin-bottom:6px;}
+  .lock-box p{color:var(--muted); font-size:13.5px; margin-bottom:22px;}
+  .field{margin-bottom:14px;}
+  label{display:block; font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em;}
+  input[type=password], input[type=text], input[type=url], textarea, select{
+    width:100%; background:var(--panel-3); border:1px solid var(--line); color:var(--text);
+    padding:11px 13px; border-radius:8px; font-size:14px; outline:none;
+  }
+  input:focus, textarea:focus, select:focus{border-color:var(--accent);}
+  textarea{resize:vertical; min-height:80px; font-family:var(--sans);}
+  .btn{
+    font-family:var(--mono); font-size:13.5px; font-weight:600; padding:12px 20px;
+    border-radius:8px; border:1px solid var(--line); cursor:pointer; display:inline-flex;
+    align-items:center; gap:8px; transition:transform .15s ease, background .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-play{background:var(--accent); color:#0b0d10; border-color:var(--accent); width:100%; justify-content:center;}
+  .btn-play:hover{background:var(--accent-dim);}
+  .btn-ghost{background:transparent; color:var(--text);}
+  .btn-ghost:hover{background:var(--panel-3);}
+  .btn-danger{color:var(--danger); border-color:rgba(255,107,107,.35);}
+  .btn-danger:hover{background:rgba(255,107,107,.08);}
+  .error-msg{color:var(--danger); font-family:var(--mono); font-size:12.5px; margin-top:10px; display:none;}
+
+  /* ---- painel ---- */
+  #panel{display:none; max-width:1000px; margin:0 auto; padding:40px 24px 80px;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:34px; flex-wrap:wrap; gap:14px;}
+  .topbar .tag{font-family:var(--mono); font-size:12px; color:var(--accent); display:flex; align-items:center; gap:8px;}
+  .topbar h1{font-size:22px;}
+  .layout{display:grid; grid-template-columns: 1fr 1.05fr; gap:26px; align-items:start;}
+  @media (max-width:860px){ .layout{grid-template-columns:1fr;} }
+
+  .card{background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius); padding:24px;}
+  .card h2{font-size:15px; margin-bottom:18px; font-family:var(--mono);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .upload-zone{
+    border:1px dashed var(--line); border-radius:8px; padding:16px; text-align:center;
+    font-family:var(--mono); font-size:12.5px; color:var(--muted); cursor:pointer;
+  }
+  .upload-zone:hover{border-color:var(--accent-2);}
+  .preview-img{width:100%; border-radius:8px; margin-top:10px; display:none; border:1px solid var(--line);}
+  .status-line{font-family:var(--mono); font-size:12px; margin-top:8px; min-height:16px;}
+  .status-line.ok{color:var(--accent);}
+  .status-line.err{color:var(--danger);}
+  .status-line.loading{color:var(--accent-2);}
+
+  .list-item{
+    display:flex; gap:12px; align-items:flex-start; padding:14px; border:1px solid var(--line);
+    border-radius:8px; margin-bottom:10px; background:var(--panel-3);
+  }
+  .list-item img{width:64px; height:44px; object-fit:cover; border-radius:6px; flex:none; background:var(--panel);}
+  .list-item .li-body{flex:1; min-width:0;}
+  .list-item .li-title{font-weight:700; font-size:14px;}
+  .list-item .li-desc{color:var(--muted); font-size:12.5px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .li-actions{display:flex; gap:6px; flex:none;}
+  .li-actions button{
+    font-family:var(--mono); font-size:11px; padding:6px 9px; border-radius:6px;
+    border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer;
+  }
+  .li-actions button:hover{background:var(--panel);}
+  .li-actions .del:hover{color:var(--danger); border-color:rgba(255,107,107,.4);}
+
+  .publish-box{
+    margin-top:22px; padding:18px; border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel-2);
+  }
+  .publish-box p{color:var(--muted); font-size:12.5px; margin-bottom:12px; line-height:1.6;}
+  .btns-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .empty-note{color:var(--muted); font-family:var(--mono); font-size:12.5px; text-align:center; padding:20px 0;}
+</style>
+</head>
+<body>
+
+  <!-- ===== tela de senha ===== -->
+  <div id="lockscreen">
+    <div class="lock-box">
+      <div class="tag">// acesso.restrito</div>
+      <h1>Painel do portfólio</h1>
+      <p>Digite a senha para gerenciar seus projetos.</p>
+      <div class="field">
+        <label for="pw">Senha</label>
+        <input type="password" id="pw" placeholder="••••••" autocomplete="off">
+      </div>
+      <button class="btn btn-play" id="loginBtn">▶ Entrar</button>
+      <div class="error-msg" id="loginError">senha incorreta — tente novamente</div>
+    </div>
+  </div>
+
+  <!-- ===== painel ===== -->
+  <div id="panel">
+    <div class="topbar">
+      <div>
+        <div class="tag">// painel.admin</div>
+        <h1>Gerenciar projetos</h1>
+      </div>
+      <button class="btn btn-ghost" id="logoutBtn">Sair</button>
+    </div>
+
+    <div class="layout">
+      <!-- formulário -->
+      <div class="card">
+        <h2 id="formTitle">+ Novo projeto</h2>
+        <input type="hidden" id="editId">
+
+        <div class="field">
+          <label>Título</label>
+          <input type="text" id="f-title" placeholder="Ex: Sistema de Inventário">
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>Tipo</label>
+            <select id="f-type">
+              <option>Script</option>
+              <option>LocalScript</option>
+              <option>ModuleScript</option>
+              <option>UI</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Data</label>
+            <input type="text" id="f-date" placeholder="AAAA-MM-DD">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Descrição</label>
+          <textarea id="f-desc" placeholder="Descreva rapidamente o que o projeto faz..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Tags (separadas por vírgula)</label>
+          <input type="text" id="f-tags" placeholder="DataStore, RemoteEvent, UI">
+        </div>
+
+        <div class="field">
+          <label>Link do projeto (opcional)</label>
+          <input type="url" id="f-link" placeholder="https://www.roblox.com/games/...">
+        </div>
+
+        <div class="field">
+          <label>Imagem</label>
+          <div class="upload-zone" id="dropZone">
+            📷 clique para escolher uma imagem<br>(enviada automaticamente para o imgbb)
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none;">
+          <input type="hidden" id="f-image">
+          <img id="previewImg" class="preview-img">
+          <div class="status-line" id="uploadStatus"></div>
+        </div>
+
+        <div class="btns-row" style="margin-top:6px;">
+          <button class="btn btn-play" id="saveBtn" style="flex:1;">Salvar projeto</button>
+          <button class="btn btn-ghost" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
+        </div>
+      </div>
+
+      <!-- lista -->
+      <div class="card">
+        <h2>Projetos salvos (<span id="countTag">0</span>)</h2>
+        <div id="listWrap"></div>
+
+        <div class="publish-box">
+          <p>
+            Isso aqui salva <b>localmente</b>, só neste navegador. Para os visitantes do
+            site verem os projetos, baixe o arquivo atualizado e suba ele no seu servidor,
+            substituindo o <code>posts.js</code> atual.
+          </p>
+          <div class="btns-row">
+            <button class="btn btn-play" id="downloadBtn">⬇ Baixar posts.js</button>
+            <button class="btn btn-danger" id="resetBtn">Limpar tudo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* ================= CONFIG ================= */
+  const PASSWORD = "2026";
+  const IMGBB_API_KEY = "86427cccd2a94fb42a0754ffd7f19e79";
+  const STORAGE_KEY = "portfolioPosts";
+  const SESSION_KEY = "portfolioPanelAuth";
+
+  /* ================= LOGIN ================= */
+  const lockscreen = document.getElementById('lockscreen');
+  const panel = document.getElementById('panel');
+  const pwInput = document.getElementById('pw');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+
+  function tryLogin(){
+    if(pwInput.value === PASSWORD){
+      sessionStorage.setItem(SESSION_KEY, "1");
+      showPanel();
+    } else {
+      loginError.style.display = 'block';
+      pwInput.value = '';
+      pwInput.focus();
+    }
+  }
+  loginBtn.addEventListener('click', tryLogin);
+  pwInput.addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    sessionStorage.removeItem(SESSION_KEY);
+    location.reload();
+  });
+
+  function showPanel(){
+    lockscreen.style.display = 'none';
+    panel.style.display = 'block';
+    renderList();
+  }
+  if(sessionStorage.getItem(SESSION_KEY) === "1"){ showPanel(); }
+
+  /* ================= DADOS ================= */
+  function getPosts(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function setPosts(posts){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    renderList();
+  }
+
+  /* ================= UPLOAD IMGBB ================= */
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const previewImg = document.getElementById('previewImg');
+  const uploadStatus = document.getElementById('uploadStatus');
+  const imageField = document.getElementById('f-image');
+
+  dropZone.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', async ()=>{
+    const file = fileInput.files[0];
+    if(!file) return;
+    uploadStatus.textContent = 'enviando imagem...';
+    uploadStatus.className = 'status-line loading';
+    try{
+      const base64 = await fileToBase64(file);
+      const form = new FormData();
+      form.append('key', IMGBB_API_KEY);
+      form.append('image', base64);
+      const res = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body: form });
+      const data = await res.json();
+      if(data.success){
+        imageField.value = data.data.url;
+        previewImg.src = data.data.url;
+        previewImg.style.display = 'block';
+        uploadStatus.textContent = '✓ imagem enviada';
+        uploadStatus.className = 'status-line ok';
+      } else {
+        throw new Error(data?.error?.message || 'falha no upload');
+      }
+    }catch(err){
+      uploadStatus.textContent = '✗ erro no upload: ' + err.message + ' — você pode colar uma URL de imagem manualmente no campo de link se preferir.';
+      uploadStatus.className = 'status-line err';
+    }
+  });
+
+  function fileToBase64(file){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ================= FORM ================= */
+  const els = {
+    id: document.getElementById('editId'),
+    title: document.getElementById('f-title'),
+    type: document.getElementById('f-type'),
+    date: document.getElementById('f-date'),
+    desc: document.getElementById('f-desc'),
+    tags: document.getElementById('f-tags'),
+    link: document.getElementById('f-link'),
+  };
+  const formTitle = document.getElementById('formTitle');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+  function clearForm(){
+    els.id.value = '';
+    els.title.value = '';
+    els.type.value = 'Script';
+    els.date.value = new Date().toISOString().slice(0,10);
+    els.desc.value = '';
+    els.tags.value = '';
+    els.link.value = '';
+    imageField.value = '';
+    previewImg.style.display = 'none';
+    previewImg.src = '';
+    uploadStatus.textContent = '';
+    fileInput.value = '';
+    formTitle.textContent = '+ Novo projeto';
+    cancelEditBtn.style.display = 'none';
+  }
+  clearForm();
+
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    const title = els.title.value.trim();
+    if(!title){ alert('Dê um título ao projeto.'); return; }
+
+    const post = {
+      id: els.id.value || 'post-' + Date.now(),
+      title,
+      type: els.type.value,
+      date: els.date.value || new Date().toISOString().slice(0,10),
+      description: els.desc.value.trim(),
+      tags: els.tags.value.split(',').map(t=>t.trim()).filter(Boolean),
+      link: els.link.value.trim(),
+      image: imageField.value
+    };
+
+    const posts = getPosts();
+    const idx = posts.findIndex(p => p.id === post.id);
+    if(idx >= 0) posts[idx] = post; else posts.push(post);
+    setPosts(posts);
+    clearForm();
+  });
+
+  cancelEditBtn.addEventListener('click', clearForm);
+
+  /* ================= LISTA ================= */
+  const listWrap = document.getElementById('listWrap');
+  const countTag = document.getElementById('countTag');
+
+  function renderList(){
+    const posts = getPosts().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    countTag.textContent = posts.length;
+    listWrap.innerHTML = '';
+    if(!posts.length){
+      listWrap.innerHTML = '<div class="empty-note">-- nenhum projeto ainda --</div>';
+      return;
+    }
+    posts.forEach(p=>{
+      const item = document.createElement('div');
+      item.className = 'list-item';
+      item.innerHTML = `
+        ${p.image ? `<img src="${p.image}">` : `<img>`}
+        <div class="li-body">
+          <div class="li-title">${escapeHtml(p.title)}</div>
+          <div class="li-desc">${escapeHtml(p.description || '')}</div>
+        </div>
+        <div class="li-actions">
+          <button class="edit">editar</button>
+          <button class="del">excluir</button>
+        </div>`;
+      item.querySelector('.edit').addEventListener('click', ()=> editPost(p.id));
+      item.querySelector('.del').addEventListener('click', ()=> deletePost(p.id));
+      listWrap.appendChild(item);
+    });
+  }
+
+  function editPost(id){
+    const post = getPosts().find(p => p.id === id);
+    if(!post) return;
+    els.id.value = post.id;
+    els.title.value = post.title;
+    els.type.value = post.type || 'Script';
+    els.date.value = post.date || '';
+    els.desc.value = post.description || '';
+    els.tags.value = (post.tags || []).join(', ');
+    els.link.value = post.link || '';
+    imageField.value = post.image || '';
+    if(post.image){ previewImg.src = post.image; previewImg.style.display = 'block'; }
+    formTitle.textContent = 'Editando: ' + post.title;
+    cancelEditBtn.style.display = 'inline-flex';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function deletePost(id){
+    if(!confirm('Excluir este projeto?')) return;
+    setPosts(getPosts().filter(p => p.id !== id));
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('Isso apaga todos os projetos salvos localmente. Continuar?')) return;
+    setPosts([]);
+  });
+
+  /* ================= DOWNLOAD posts.js ================= */
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const posts = getPosts();
+    const content = `const POSTS = ${JSON.stringify(posts, null, 2)};\n`;
+    const blob = new Blob([content], {type:'text/javascript'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'posts.js';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  function escapeHtml(str=''){
+    return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+</script>
+</body>
+</html>
