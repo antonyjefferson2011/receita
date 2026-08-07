@@ -1,190 +1,463 @@
 <!DOCTYPE html>
-<!--
-  =============================================================
-  PROJETO: Rede Social de Receitas (com Firebase)
-  DATA DE ATUALIZAÇÃO: 01/08/2026
-  DESCRIÇÃO: Feed público de receitas — todo usuário autenticado
-  vê as receitas de todo mundo, pode postar as suas (com imagem
-  via ImgBB) e excluir apenas as que ele mesmo criou.
-  =============================================================
--->
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rede Social de Receitas · Compartilhe suas receitas</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfólio — Roblox Studio Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d10;
+    --panel:#14171c;
+    --panel-2:#191d24;
+    --panel-3:#1e232b;
+    --line:#262b33;
+    --text:#e8e7e2;
+    --muted:#8c92a0;
+    --accent:#baff39;
+    --accent-dim:#8fce23;
+    --accent-2:#39d2ff;
+    --danger:#ff6b6b;
+    --radius:10px;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Manrope', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--accent); color:#0b0d10;}
+  a{color:inherit; text-decoration:none;}
 
-  <!-- Fontes do Google Fonts: uma serifada para títulos e uma sóbria para o corpo -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  /* ---------- top bar (título da janela) ---------- */
+  .titlebar{
+    display:flex; align-items:center; gap:8px;
+    padding:10px 16px;
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    position:sticky; top:0; z-index:50;
+  }
+  .dots{display:flex; gap:6px; margin-right:8px;}
+  .dot{width:10px; height:10px; border-radius:50%;}
+  .dot.r{background:#ff5f56;}
+  .dot.y{background:#ffbd2e;}
+  .dot.g{background:#27c93f;}
+  .titlebar .path{color:var(--text); opacity:.7;}
+  .titlebar .path b{color:var(--accent); font-weight:600;}
 
-  <!-- Nosso CSS -->
-  <link rel="stylesheet" href="style.css" />
+  /* ---------- layout: explorer + conteúdo ---------- */
+  .app{
+    display:grid;
+    grid-template-columns: 250px 1fr;
+    min-height:100vh;
+  }
+  .explorer{
+    background:var(--panel);
+    border-right:1px solid var(--line);
+    padding:18px 10px;
+    position:sticky; top:41px;
+    height:calc(100vh - 41px);
+    overflow-y:auto;
+  }
+  .explorer h4{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:0 8px 10px;
+  }
+  .tree{list-style:none; font-family:var(--mono); font-size:13px;}
+  .tree li{margin:1px 0;}
+  .tree a{
+    display:flex; align-items:center; gap:8px;
+    padding:7px 8px;
+    border-radius:6px;
+    color:var(--text);
+    opacity:.8;
+  }
+  .tree a:hover{background:var(--panel-3); opacity:1;}
+  .tree a.active{background:var(--panel-3); opacity:1; color:var(--accent);}
+  .node-icon{
+    width:9px; height:9px; border-radius:2px; flex:none;
+  }
+  .tree .sub{padding-left:16px; border-left:1px dashed var(--line); margin-left:12px;}
+  .tree .sub li a{font-size:12.5px; opacity:.65;}
+  .tree .sub li a:hover{opacity:1;}
+
+  main{min-width:0;}
+  section{padding:90px 56px; border-bottom:1px solid var(--line);}
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--accent);
+    letter-spacing:.08em;
+    margin-bottom:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:"//"; color:var(--muted);}
+
+  /* ---------- hero (editor de script) ---------- */
+  .hero{padding-top:56px;}
+  .editor-tab{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-bottom:none;
+    padding:8px 16px;
+    border-radius:8px 8px 0 0;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .editor-tab .file-dot{width:7px; height:7px; border-radius:50%; background:var(--accent);}
+  .editor-window{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:0 10px 10px 10px;
+    padding:32px 36px;
+    display:flex; gap:24px;
+  }
+  .gutter{
+    font-family:var(--mono);
+    color:#3d4350;
+    font-size:14px;
+    line-height:1.9;
+    text-align:right;
+    user-select:none;
+  }
+  .code{
+    font-family:var(--mono);
+    font-size:clamp(15px, 2vw, 19px);
+    line-height:1.9;
+    white-space:pre-wrap;
+  }
+  .kw{color:#ff7ab8;}
+  .fn{color:var(--accent-2);}
+  .str{color:var(--accent);}
+  .cm{color:var(--muted);}
+  .prop{color:#ffb454;}
+
+  .hero-headline{
+    font-family:var(--mono);
+    font-weight:800;
+    font-size:clamp(30px, 4.4vw, 54px);
+    line-height:1.15;
+    margin:34px 0 16px;
+    letter-spacing:-0.01em;
+  }
+  .hero-headline span{color:var(--accent);}
+  .hero-sub{
+    max-width:600px;
+    color:var(--muted);
+    font-size:17px;
+    margin-bottom:30px;
+  }
+  .btn-row{display:flex; gap:14px; flex-wrap:wrap;}
+  .btn{
+    font-family:var(--mono);
+    font-size:13.5px;
+    font-weight:600;
+    padding:13px 22px;
+    border-radius:8px;
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line);
+    transition:transform .15s ease, background .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-play{background:var(--accent); color:#0b0d10; border-color:var(--accent);}
+  .btn-play:hover{background:var(--accent-dim);}
+  .btn-ghost{color:var(--text);}
+  .btn-ghost:hover{background:var(--panel-3);}
+
+  /* ---------- sobre ---------- */
+  .about-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:60px; align-items:start;}
+  h2.title{
+    font-family:var(--mono);
+    font-size:clamp(24px, 3vw, 34px);
+    font-weight:700;
+    margin-bottom:18px;
+  }
+  .about-grid p{color:var(--muted); font-size:15.5px; margin-bottom:14px; max-width:52ch;}
+  .stat-card{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px;
+    font-family:var(--mono);
+  }
+  .stat-list{display:grid; gap:12px;}
+  .stat-row{display:flex; justify-content:space-between; font-size:13px; padding:10px 0; border-bottom:1px solid var(--line);}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-row span:first-child{color:var(--muted);}
+  .stat-row span:last-child{color:var(--accent-2);}
+
+  /* ---------- skills ---------- */
+  .skills-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+    gap:14px; margin-top:30px;
+  }
+  .skill-card{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px;
+  }
+  .skill-card .k{font-family:var(--mono); color:var(--accent); font-size:12px; margin-bottom:8px; display:block;}
+  .skill-card h3{font-size:16px; margin-bottom:6px;}
+  .skill-card p{color:var(--muted); font-size:13.5px;}
+
+  /* ---------- projetos ---------- */
+  #posts-empty{
+    color:var(--muted); font-family:var(--mono); font-size:13.5px;
+    padding:26px; border:1px dashed var(--line); border-radius:var(--radius); margin-top:20px;
+  }
+  .posts-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
+    gap:22px; margin-top:30px;
+  }
+  .post-card{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .post-card:hover{border-color:#3a4150; transform:translateY(-3px);}
+  .post-chrome{
+    display:flex; align-items:center; gap:6px;
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+    font-family:var(--mono); font-size:11.5px; color:var(--muted);
+  }
+  .post-chrome .m-dot{width:7px; height:7px; border-radius:50%;}
+  .post-img{
+    width:100%; aspect-ratio:16/9; object-fit:cover;
+    background:var(--panel-3);
+    border-bottom:1px solid var(--line);
+  }
+  .post-img.placeholder{
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono); font-size:12px; color:#3d4350;
+  }
+  .post-body{padding:18px 18px 20px; display:flex; flex-direction:column; gap:10px; flex:1;}
+  .post-title{font-size:16.5px; font-weight:700;}
+  .post-desc{color:var(--muted); font-size:13.5px; flex:1;}
+  .tag-row{display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{
+    font-family:var(--mono); font-size:10.5px; color:var(--accent-2);
+    background:rgba(57,210,255,.08); border:1px solid rgba(57,210,255,.25);
+    padding:3px 8px; border-radius:5px;
+  }
+  .post-link{
+    font-family:var(--mono); font-size:12.5px; color:var(--accent);
+    display:inline-flex; align-items:center; gap:6px; margin-top:4px;
+  }
+
+  /* ---------- contato ---------- */
+  .contact-box{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius);
+    padding:36px; margin-top:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;
+  }
+  .contact-box .code-line{font-family:var(--mono); font-size:15px; color:var(--muted);}
+  .contact-links{display:flex; gap:12px; flex-wrap:wrap;}
+
+  footer{
+    padding:30px 56px; font-family:var(--mono); font-size:12px; color:var(--muted);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+  }
+
+  /* ---------- mobile ---------- */
+  .menu-toggle{display:none;}
+  @media (max-width:900px){
+    .app{grid-template-columns:1fr;}
+    .explorer{
+      position:fixed; left:0; top:41px; bottom:0; z-index:60;
+      width:250px; transform:translateX(-100%);
+      transition:transform .2s ease;
+      box-shadow:8px 0 24px rgba(0,0,0,.4);
+    }
+    .explorer.open{transform:translateX(0);}
+    .menu-toggle{
+      display:inline-flex; align-items:center; gap:6px;
+      font-family:var(--mono); font-size:12px; color:var(--text);
+      background:var(--panel-3); border:1px solid var(--line);
+      padding:5px 10px; border-radius:6px; margin-left:auto; cursor:pointer;
+    }
+    section{padding:60px 24px;}
+    .about-grid{grid-template-columns:1fr;}
+    .editor-window{flex-direction:column;}
+    .gutter{display:none;}
+  }
+</style>
 </head>
 <body>
 
-  <!-- ===================== TELA DE LOGIN / CADASTRO ===================== -->
-  <!-- Este container fica visível enquanto ninguém está autenticado -->
-  <section id="auth-container" class="auth-container">
-    <div class="auth-card fade-in">
+  <div class="titlebar">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <span class="path">Workspace <b>&gt; Portfolio.rbxl</b></span>
+    <button class="menu-toggle" id="menuToggle">☰ Explorer</button>
+  </div>
 
-      <div class="auth-brand">
-        <span class="auth-brand-icon" aria-hidden="true">🍲</span>
-        <h1 class="auth-brand-title">Rede Social de Receitas</h1>
-        <p class="auth-brand-subtitle">Cozinhe, compartilhe e descubra receitas.</p>
-      </div>
+  <div class="app">
+    <aside class="explorer" id="explorer">
+      <h4>Explorer</h4>
+      <ul class="tree">
+        <li><a href="#inicio" class="active"><span class="node-icon" style="background:var(--accent)"></span>Sobre.lua</a></li>
+        <li><a href="#habilidades"><span class="node-icon" style="background:var(--accent-2)"></span>Habilidades</a></li>
+        <li>
+          <a href="#projetos"><span class="node-icon" style="background:#ffb454"></span>Projetos</a>
+          <ul class="sub" id="posts-tree"></ul>
+        </li>
+        <li><a href="#contato"><span class="node-icon" style="background:#ff7ab8"></span>Contato.RemoteEvent</a></li>
+      </ul>
+    </aside>
 
-      <!-- Abas para alternar entre Entrar e Criar conta -->
-      <div class="auth-tabs" role="tablist">
-        <button type="button" class="auth-tab active" data-tab="login" role="tab" aria-selected="true">
-          Entrar
-        </button>
-        <button type="button" class="auth-tab" data-tab="cadastro" role="tab" aria-selected="false">
-          Criar conta
-        </button>
-      </div>
-
-      <!-- Formulário de LOGIN -->
-      <form id="login-form" class="auth-form" novalidate>
-        <label class="field-label" for="login-email">E-mail</label>
-        <input class="field-input" type="email" id="login-email" placeholder="voce@email.com" required autocomplete="email" />
-
-        <label class="field-label" for="login-senha">Senha</label>
-        <input class="field-input" type="password" id="login-senha" placeholder="Sua senha" required autocomplete="current-password" minlength="6" />
-
-        <button type="submit" class="btn btn-primary">Entrar</button>
-      </form>
-
-      <!-- Formulário de CADASTRO (começa escondido) -->
-      <form id="cadastro-form" class="auth-form hidden" novalidate>
-        <label class="field-label" for="cadastro-nome">Nome</label>
-        <input class="field-input" type="text" id="cadastro-nome" placeholder="Como podemos te chamar?" required autocomplete="name" />
-
-        <label class="field-label" for="cadastro-email">E-mail</label>
-        <input class="field-input" type="email" id="cadastro-email" placeholder="voce@email.com" required autocomplete="email" />
-
-        <label class="field-label" for="cadastro-senha">Senha</label>
-        <input class="field-input" type="password" id="cadastro-senha" placeholder="Crie uma senha (mín. 6 caracteres)" required autocomplete="new-password" minlength="6" />
-
-        <button type="submit" class="btn btn-primary">Criar conta</button>
-      </form>
-
-      <!-- Área de mensagens de erro/sucesso da autenticação -->
-      <p id="auth-mensagem" class="auth-mensagem" role="alert" aria-live="polite"></p>
-    </div>
-  </section>
-
-  <!-- ===================== APP PRINCIPAL (usuário logado) ===================== -->
-  <div id="app-container" class="app-container hidden">
-
-    <header class="app-header">
-      <div class="app-header-inner">
-        <div class="app-brand">
-          <span class="app-brand-icon" aria-hidden="true">🍲</span>
-          <span class="app-brand-title">Rede Social de Receitas</span>
+    <main>
+      <section class="hero" id="inicio">
+        <div class="editor-tab"><span class="file-dot"></span>Sobre.lua</div>
+        <div class="editor-window">
+          <div class="gutter">1<br>2<br>3<br>4<br>5</div>
+          <div class="code"><span class="kw">local</span> Developer = {}
+Developer.<span class="prop">name</span> = <span class="str">"Seu Nome"</span>
+Developer.<span class="prop">role</span> = <span class="str">"Roblox Studio Programmer"</span>
+Developer.<span class="prop">stack</span> = {<span class="str">"Lua"</span>, <span class="str">"Roblox Studio"</span>, <span class="str">"UI/UX"</span>}
+<span class="cm">-- construindo experiências desde 20XX</span></div>
         </div>
 
-        <div class="app-header-user">
-          <span id="usuario-email" class="app-user-email"></span>
-          <button id="btn-logout" class="btn btn-ghost" type="button">Sair</button>
-        </div>
-      </div>
-    </header>
-
-    <main class="app-main">
-
-      <!-- Bloco de boas-vindas + contador de receitas do feed -->
-      <section class="dashboard-intro fade-in">
-        <div>
-          <h2 class="dashboard-title">Feed de receitas</h2>
-          <p class="dashboard-subtitle">Tudo que a comunidade está cozinhando agora.</p>
-        </div>
-        <div class="contador-card">
-          <span id="contador-receitas" class="contador-numero">0</span>
-          <span class="contador-label">receitas</span>
+        <h1 class="hero-headline">Eu escrevo <span>scripts</span>,<br>não desculpas.</h1>
+        <p class="hero-sub">Programador focado em Roblox Studio: sistemas de gameplay, UI, backend com DataStores e tudo que roda por trás de uma experiência divertida.</p>
+        <div class="btn-row">
+          <a href="#projetos" class="btn btn-play">▶ Rodar Projetos</a>
+          <a href="#contato" class="btn btn-ghost">Contato →</a>
         </div>
       </section>
 
-      <!-- Formulário para publicar nova receita (fica acima do feed) -->
-      <section class="nova-receita-card fade-in">
-        <h3 class="card-heading">Publicar nova receita</h3>
-        <form id="receita-form" class="receita-form" novalidate>
+      <section id="habilidades">
+        <div class="eyebrow">habilidades.model</div>
+        <h2 class="title">O que roda por baixo do capô</h2>
+        <div class="skills-grid">
+          <div class="skill-card"><span class="k">01</span><h3>Scripting em Lua</h3><p>Server/Client scripts, ModuleScripts organizados e código performático.</p></div>
+          <div class="skill-card"><span class="k">02</span><h3>Sistemas de Gameplay</h3><p>Inventário, combate, progressão, quests e economia de jogo.</p></div>
+          <div class="skill-card"><span class="k">03</span><h3>UI / UX no Studio</h3><p>Interfaces responsivas com UIListLayout, tweens e animações fluidas.</p></div>
+          <div class="skill-card"><span class="k">04</span><h3>DataStores</h3><p>Persistência de dados confiável, com proteção contra perda de save.</p></div>
+          <div class="skill-card"><span class="k">05</span><h3>RemoteEvents / Functions</h3><p>Comunicação segura entre servidor e cliente, com validação anti-exploit.</p></div>
+          <div class="skill-card"><span class="k">06</span><h3>Otimização</h3><p>Redução de lag, streaming de partes e boas práticas de performance.</p></div>
+        </div>
+      </section>
 
-          <label class="field-label" for="receita-titulo">Título</label>
-          <input class="field-input" type="text" id="receita-titulo" placeholder="Ex: Bolo de fubá cremoso" required />
+      <section id="projetos">
+        <div class="eyebrow">projetos.folder</div>
+        <h2 class="title">Trabalhos publicados</h2>
+        <p style="color:var(--muted); max-width:56ch;">Uma seleção de sistemas e experiências que já construí no Roblox Studio.</p>
+        <div id="posts-empty" style="display:none;">-- nenhum projeto publicado ainda. Adicione pelo painel.html --</div>
+        <div class="posts-grid" id="posts-grid"></div>
+      </section>
 
-          <div class="field-grid field-grid-3">
-            <div class="field-col">
-              <label class="field-label" for="receita-tempo">⏱️ Tempo de preparo <span class="field-hint">(opcional)</span></label>
-              <input class="field-input" type="text" id="receita-tempo" placeholder="Ex: 30 min" />
-            </div>
-            <div class="field-col">
-              <label class="field-label" for="receita-acessorios">🥄 Acessórios/Utensílios <span class="field-hint">(opcional)</span></label>
-              <input class="field-input" type="text" id="receita-acessorios" placeholder="Ex: Forno, Liquidificador" />
-            </div>
-            <div class="field-col">
-              <label class="field-label" for="receita-imagem">🖼️ Foto da receita <span class="field-hint">(opcional)</span></label>
-              <input class="field-input field-file" type="file" id="receita-imagem" accept="image/*" />
-            </div>
+      <section id="contato" style="border-bottom:none;">
+        <div class="eyebrow">contato.remoteevent</div>
+        <h2 class="title">Bora conversar sobre seu projeto?</h2>
+        <div class="contact-box">
+          <div class="code-line">FireServer("contato", {mensagem = "Vamos criar algo juntos"})</div>
+          <div class="contact-links">
+            <a class="btn btn-play" href="mailto:seuemail@exemplo.com">✉ Email</a>
+            <a class="btn btn-ghost" href="https://www.roblox.com/users/0/profile" target="_blank" rel="noopener">Perfil Roblox ↗</a>
+            <a class="btn btn-ghost" href="https://discord.com" target="_blank" rel="noopener">Discord ↗</a>
           </div>
-
-          <!-- Pré-visualização da imagem escolhida -->
-          <div id="preview-imagem-wrapper" class="preview-imagem-wrapper hidden">
-            <img id="preview-imagem" class="preview-imagem" alt="Pré-visualização da imagem escolhida" />
-            <button type="button" id="btn-remover-imagem" class="btn-remover-imagem" aria-label="Remover imagem selecionada">✕</button>
-          </div>
-
-          <div class="field-grid">
-            <div class="field-col">
-              <label class="field-label" for="receita-ingredientes">Ingredientes <span class="field-hint">(um por linha)</span></label>
-              <textarea class="field-input field-textarea" id="receita-ingredientes" rows="5" placeholder="2 xícaras de farinha&#10;3 ovos&#10;1 xícara de leite" required></textarea>
-            </div>
-            <div class="field-col">
-              <label class="field-label" for="receita-passos">📝 Passo a passo <span class="field-hint">(um passo por linha)</span></label>
-              <textarea class="field-input field-textarea" id="receita-passos" rows="5" placeholder="1. Misture os secos&#10;2. Adicione os líquidos&#10;3. Asse por 40 min" required></textarea>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary">
-            <span id="salvar-texto">Publicar receita</span>
-          </button>
-        </form>
-        <p id="receita-mensagem" class="receita-mensagem" role="alert" aria-live="polite"></p>
-      </section>
-
-      <!-- Botão de demonstração: gera 1000 receitas de teste -->
-      <section class="seed-card fade-in">
-        <div class="seed-card-texto">
-          <h3 class="card-heading">Popular o feed (demo)</h3>
-          <p class="dashboard-subtitle">Gera 1000 receitas de exemplo, publicadas com a sua conta, para testar o feed com volume real de dados.</p>
-        </div>
-        <div class="seed-card-acao">
-          <button id="btn-seed" type="button" class="btn btn-seed">Gerar 1000 receitas (demo)</button>
-          <p id="seed-progresso" class="seed-progresso" aria-live="polite"></p>
         </div>
       </section>
 
-      <!-- Feed com as receitas de todos os usuários -->
-      <section class="lista-receitas-section">
-        <div id="lista-vazia" class="lista-vazia hidden">
-          <span class="lista-vazia-icon" aria-hidden="true">🍽️</span>
-          <p>Ainda não há receitas no feed. Que tal publicar a primeira?</p>
-        </div>
-        <div id="lista-receitas" class="lista-receitas" aria-live="polite">
-          <!-- Os cards de receita são inseridos aqui via JavaScript -->
-        </div>
-      </section>
-
+      <footer>
+        <span>© <span id="year"></span> — Portfólio Roblox Studio</span>
+        <span>compilado sem erros ✓</span>
+      </footer>
     </main>
   </div>
 
-  <!-- ===================== Firebase SDK (versão compatível, via CDN) ===================== -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="posts.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-  <!-- Nossa lógica -->
-  <script src="app.js"></script>
+  // menu mobile
+  const toggle = document.getElementById('menuToggle');
+  const explorer = document.getElementById('explorer');
+  toggle?.addEventListener('click', () => explorer.classList.toggle('open'));
+  document.querySelectorAll('.tree a').forEach(a=>{
+    a.addEventListener('click', ()=> explorer.classList.remove('open'));
+  });
+
+  // usa os posts salvos localmente no painel (se existirem) para pré-visualização,
+  // senão usa o posts.js publicado
+  function loadPosts(){
+    try{
+      const local = localStorage.getItem('portfolioPosts');
+      if(local) return JSON.parse(local);
+    }catch(e){}
+    return (typeof POSTS !== 'undefined') ? POSTS : [];
+  }
+
+  const posts = loadPosts().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  const grid = document.getElementById('posts-grid');
+  const empty = document.getElementById('posts-empty');
+  const tree = document.getElementById('posts-tree');
+
+  if(!posts.length){
+    empty.style.display = 'block';
+  } else {
+    posts.forEach(p=>{
+      const card = document.createElement('div');
+      card.className = 'post-card';
+      card.innerHTML = `
+        <div class="post-chrome">
+          <span class="m-dot" style="background:#ff5f56"></span>
+          <span class="m-dot" style="background:#ffbd2e"></span>
+          <span class="m-dot" style="background:#27c93f"></span>
+          <span style="margin-left:6px;">${escapeHtml(p.title || 'Projeto')}.${(p.type||'Script').toLowerCase().includes('local') ? 'lua' : 'lua'}</span>
+        </div>
+        ${p.image
+          ? `<img class="post-img" src="${escapeAttr(p.image)}" alt="${escapeAttr(p.title||'')}">`
+          : `<div class="post-img placeholder">// sem preview</div>`}
+        <div class="post-body">
+          <div class="post-title">${escapeHtml(p.title || 'Sem título')}</div>
+          <div class="post-desc">${escapeHtml(p.description || '')}</div>
+          <div class="tag-row">
+            ${(p.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}
+          </div>
+          ${p.link ? `<a class="post-link" href="${escapeAttr(p.link)}" target="_blank" rel="noopener">Abrir projeto ↗</a>` : ''}
+        </div>`;
+      grid.appendChild(card);
+
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#projetos"><span class="node-icon" style="background:var(--accent-2)"></span>${escapeHtml(p.title||'projeto')}.lua</a>`;
+      tree.appendChild(li);
+    });
+  }
+
+  function escapeHtml(str=''){
+    return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+  function escapeAttr(str=''){ return escapeHtml(str); }
+
+  // scrollspy simples
+  const links = document.querySelectorAll('.tree > li > a');
+  const sections = [...links].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  window.addEventListener('scroll', ()=>{
+    let current = sections[0];
+    sections.forEach(sec=>{
+      if(window.scrollY + 120 >= sec.offsetTop) current = sec;
+    });
+    links.forEach(a=>{
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current.id);
+    });
+  });
+</script>
 </body>
 </html>
